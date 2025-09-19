@@ -1,12 +1,10 @@
-// React + Tailwind CSS Advanced To-Do List
-
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ElectricBorder, ShinyText, RippleGrid } from 'reactbit';
 
-// Task Component
 function Task({ task, toggleComplete, deleteTask, addSubtask }) {
     return (
-        <div className={`p-4 rounded-lg shadow mb-3 ${task.completed ? 'bg-green-100 line-through text-gray-500' : 'bg-gray-100'}`}>
+        <ElectricBorder className={`p-4 rounded-lg mb-4 ${task.completed ? 'bg-green-100 line-through text-gray-500' : 'bg-gray-100'}`}>
             <div className="flex justify-between items-center">
                 <div>
                     <strong>{task.text}</strong> <br />
@@ -25,11 +23,10 @@ function Task({ task, toggleComplete, deleteTask, addSubtask }) {
                     ))}
                 </ul>
             )}
-        </div>
+        </ElectricBorder>
     );
 }
 
-// Main App Component
 function App() {
     const [tasks, setTasks] = useState(() => JSON.parse(localStorage.getItem('tasks')) || []);
     const [text, setText] = useState('');
@@ -37,20 +34,11 @@ function App() {
     const [priority, setPriority] = useState('Medium');
     const [tags, setTags] = useState('');
 
-    useEffect(() => {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    }, [tasks]);
+    useEffect(() => { localStorage.setItem('tasks', JSON.stringify(tasks)); }, [tasks]);
 
     const addTask = (e) => {
         e.preventDefault();
-        const newTask = {
-            text,
-            due,
-            priority,
-            tags: tags.split(',').map(t => t.trim()),
-            completed: false,
-            subtasks: []
-        };
+        const newTask = { text, due, priority, tags: tags.split(',').map(t => t.trim()), completed: false, subtasks: [] };
         setTasks([...tasks, newTask]);
         setText(''); setDue(''); setTags('');
     };
@@ -62,8 +50,7 @@ function App() {
     };
 
     const deleteTask = (index) => {
-        const newTasks = tasks.filter((_, i) => i !== index);
-        setTasks(newTasks);
+        setTasks(tasks.filter((_, i) => i !== index));
     };
 
     const addSubtask = (index, toggle=false) => {
@@ -82,9 +69,9 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-5">
+        <RippleGrid className="min-h-screen flex items-center justify-center p-5 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-                <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">Advanced To-Do List 📝</h1>
+                <ShinyText className="text-3xl font-bold text-center mb-6 text-gray-800">Advanced To-Do List 📝</ShinyText>
                 <form onSubmit={addTask} className="space-y-2">
                     <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Task description" required className="w-full p-2 border rounded" />
                     <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="w-full p-2 border rounded" />
@@ -94,7 +81,9 @@ function App() {
                         <option>High</option>
                     </select>
                     <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Tags, comma separated" className="w-full p-2 border rounded" />
-                    <button type="submit" className="w-full bg-purple-500 text-white p-2 rounded hover:bg-purple-600">Add Task</button>
+                    <ShinyText>
+                        <button type="submit" className="w-full bg-purple-500 text-white p-2 rounded hover:bg-purple-600">Add Task</button>
+                    </ShinyText>
                 </form>
 
                 <div className="mt-4">
@@ -109,11 +98,10 @@ function App() {
                     ))}
                 </div>
             </div>
-        </div>
+        </RippleGrid>
     );
 }
 
-// Render App
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(<App />);
