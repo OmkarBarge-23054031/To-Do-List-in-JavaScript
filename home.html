@@ -2,24 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>To-Do List 📝</title>
+    <title>Advanced To-Do List 📝</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .subtask {
+            margin-left: 20px;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex items-center justify-center p-5">
+<body class="bg-gray-100 p-8">
 
-<div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-    <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">To-Do List 📝</h1>
+<div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold mb-6 text-center">Advanced To-Do List 📝</h1>
 
-    <form id="todo-form" class="flex mb-4">
-        <input type="text" id="task-input" placeholder="Add a new task"
-               class="flex-1 p-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" required>
-        <button type="submit"
-                class="bg-purple-500 text-white px-4 rounded-r-lg hover:bg-purple-600 transition-colors">Add</button>
+    <form id="todo-form" class="space-y-4">
+        <div>
+            <input type="text" id="task-input" placeholder="Task description" required class="w-full p-2 border rounded"/>
+        </div>
+        <div>
+            <input type="date" id="task-due" class="w-full p-2 border rounded"/>
+        </div>
+        <div>
+            <select id="task-priority" class="w-full p-2 border rounded">
+                <option value="Low">Low Priority</option>
+                <option value="Medium" selected>Medium Priority</option>
+                <option value="High">High Priority</option>
+            </select>
+        </div>
+        <div>
+            <input type="text" id="task-tags" placeholder="Tags / categories (comma separated)" class="w-full p-2 border rounded"/>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Add Task</button>
     </form>
 
-    <ul id="task-list" class="space-y-2"></ul>
+    <ul id="task-list" class="mt-6 space-y-4"></ul>
 </div>
 
-<script src="app.js"></script>
+<script>
+    const taskForm = document.getElementById('todo-form');
+    const taskInput = document.getElementById('task-input');
+    const taskDue = document.getElementById('task-due');
+    const taskPriority = document.getElementById('task-priority');
+    const taskTags = document.getElementById('task-tags');
+    const taskList = document.getElementById('task-list');
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+        taskList.innerHTML = '';
+        tasks.forEach((task, index) => {
+            const li = document.createElement('li');
+            li.className = `p-4 rounded-lg shadow ${task.completed ? 'bg-green-100 completed' : 'bg-gray-100'}`;
+
+            const content = document.createElement('div');
+            content.innerHTML = `<strong>${task.text}</strong> <br> Due: ${task.due || 'N/A'} | Priority: ${task.priority} | Tags: ${task.tags.join(', ')}`;
+
+            const subtaskContainer = document.createElement('ul');
+            subtaskContainer.className = 'list-disc subtask mt-2 ml-5';
+            task.subtasks.forEach((sub, subIndex) => {
+                const subLi = document.createElement('li');
+                subLi.className = sub.completed ? 'completed' : '';
+                subLi.textContent = sub.text;
+                subLi.onclick = () => {
+                    task.subtasks[subIndex].completed = !task.subtasks[subIndex].completed;
+                    saveTasks();
+                    renderTasks();
+                };
+                subtaskContainer.appendChild(subLi);
+            });
+
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'mt-2 flex gap-2';
+
+            const completeBtn = document.createElement('button');
+            completeBtn.className = 'bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600';
+            completeBtn.textContent = '✔ Complete';
+            completeBtn.onclick = () => {
+                tasks[index].completed = !tasks[index].completed;
+                saveTasks();
+                renderTasks();
+            };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600';
+            deleteBtn.textContent = '🗑 Delete';
+            deleteBtn.onclick = () => {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+            };
+
+            const addSubBtn = document.createElement('button');
+            addSubBtn.className = 'bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600';
+            addSubBtn.textContent = '+ Subtask';
+            addSubBtn.onclick = () => {
+                const subText = prompt('Enter subtask:');
+                if(subText) {
+                    task.subtasks.push({text: subText, completed: false});
+                    saveTasks();
+                    renderTasks();
+                }
+            };
+
+            btnGroup.appendChild(completeBtn);
+            btnGroup.appendChild(deleteBtn);
+            btnGroup.appendChild(addSubBtn);
+
+            li.appendChild(content);
+            li.appendChild(subtaskContainer);
+            li.appendChild(btnGroup);
+            taskList.appendChild(li);
+        });
+    }
+
+    taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newTask = {
+            text: taskInput.value,
+            due: taskDue.value,
+            priority: taskPriority.value,
+            tags: taskTags.value ? taskTags.value.split(',').map(t => t.trim()) : [],
+            completed: false,
+            subtasks: []
+        };
+        tasks.push(newTask);
+        taskInput.value = '';
+        taskDue.value = '';
+        taskTags.value = '';
+        saveTasks();
+        renderTasks();
+    });
+
+    renderTasks();
+</script>
+
 </body>
 </html>
